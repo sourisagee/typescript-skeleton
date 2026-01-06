@@ -224,7 +224,7 @@ export interface DbModels {
  * Расширение интерфейса Response.locals для хранения данных пользователя и задачи
  */
 export interface CustomLocals {
-  user?: Omit<UserAttributes, 'password' | 'activationToken'>;
+  user?: Omit<UserAttributes, 'password'>;
   task?: TaskModel;
 }
 
