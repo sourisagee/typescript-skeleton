@@ -1,5 +1,7 @@
-const authRouter = require('express').Router();
-const UserController = require('../controllers/user.controller');
+import { Router } from 'express';
+import UserController from '../controllers/user.controller';
+
+const authRouter = Router();
 
 authRouter
   .get('/refreshTokens', UserController.refreshTokens)
@@ -7,4 +9,4 @@ authRouter
   .post('/signIn', UserController.signIn)
   .delete('/signOut', UserController.signOut);
 
-module.exports = authRouter;
+export default authRouter;

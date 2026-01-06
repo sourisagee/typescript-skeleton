@@ -1,7 +1,9 @@
-const taskRouter = require('express').Router();
-const TaskController = require('../controllers/task.controller');
-const verifyAccessToken = require('../middleware/verifyAccessToken');
-const verifyTaskOwner = require('../middleware/verifyTaskOwner');
+import { Router } from 'express';
+import TaskController from '../controllers/task.controller';
+import verifyAccessToken from '../middleware/verifyAccessToken';
+import verifyTaskOwner from '../middleware/verifyTaskOwner';
+
+const taskRouter = Router();
 
 taskRouter
   .route('/')
@@ -16,4 +18,4 @@ taskRouter
   .put(verifyAccessToken, verifyTaskOwner, TaskController.updateTask)
   .delete(verifyAccessToken, verifyTaskOwner, TaskController.deleteTask);
 
-module.exports = taskRouter;
+export default taskRouter;
