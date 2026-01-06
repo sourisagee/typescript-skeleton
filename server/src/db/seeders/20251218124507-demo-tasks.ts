@@ -1,11 +1,17 @@
-'use strict';
+import { QueryInterface, Sequelize } from 'sequelize';
 
-/** @type {import('sequelize-cli').Migration} */
-module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.bulkInsert(
-      'Tasks',
-      [
+interface TaskSeedData {
+  title: string;
+  status: boolean;
+  user_id: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const seeder = {
+  async up(queryInterface: QueryInterface, sequelize: Sequelize): Promise<void> {
+    try {
+      const tasks: TaskSeedData[] = [
         {
           title: 'Закончить проект',
           status: false,
@@ -62,12 +68,23 @@ module.exports = {
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-      ],
-      {},
-    );
+      ];
+
+      await queryInterface.bulkInsert('Tasks', tasks, {});
+    } catch (error) {
+      console.error('❌ Error seeding tasks:', error);
+      throw error;
+    }
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Tasks', null, {});
+  async down(queryInterface: QueryInterface, sequelize: Sequelize): Promise<void> {
+    try {
+      await queryInterface.bulkDelete('Tasks', {}, {});
+    } catch (error) {
+      console.error('❌ Error removing task seed data:', error);
+      throw error;
+    }
   },
 };
+
+export default seeder;
