@@ -1,25 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { TaskApi } from '../../entities/TaskApi';
 import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
-import Container from 'react-bootstrap/esm/Container';
+import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { useNavigate } from 'react-router-dom';
+import type { UserAttributes } from '../../types/authTypes';
+import type { TaskAttributes } from '../../types/taskTypes';
 
-export default function AllTasksPage({ user, allTasks, setAllTasks }) {
+interface AllTasksPageProps {
+  user: UserAttributes | null;
+  allTasks: TaskAttributes[];
+  setAllTasks: (allTasks: TaskAttributes[]) => void;
+}
+
+export default function AllTasksPage({
+  user,
+  allTasks,
+  setAllTasks,
+}: AllTasksPageProps): React.JSX.Element {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getAllTasks = async () => {
+    const getAllTasks = async (): Promise<void> => {
       try {
         const response = await TaskApi.getAll();
         console.log(response);
         console.log(response.data);
-        console.log(response.data?.data);
 
-        setAllTasks(response.data || []);
+        response.data ? setAllTasks(response.data) : setAllTasks([]);
+        // setAllTasks(response.data || []);
       } catch (error) {
         console.log(error);
       }
@@ -28,7 +40,7 @@ export default function AllTasksPage({ user, allTasks, setAllTasks }) {
     getAllTasks();
   }, [setAllTasks]);
 
-  const handleClick = (taskId) => {
+  const handleClick = (taskId: number): void => {
     navigate(`/task/${taskId}`);
   };
 
@@ -50,7 +62,6 @@ export default function AllTasksPage({ user, allTasks, setAllTasks }) {
         {user && (
           <Row className="justify-content-center">
             {allTasks.map((task) => {
-             
               return (
                 <Col key={task.id} xs={12} sm={6} md={4} lg={3} className="mb-3">
                   <Card className="h-100">
