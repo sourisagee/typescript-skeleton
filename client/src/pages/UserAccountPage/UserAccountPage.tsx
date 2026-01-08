@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react';
-import { TaskApi } from '../../entities/TaskApi';
-import { useNavigate, useParams } from 'react-router-dom';
+// import { useEffect, useState } from 'react';
+// import { TaskApi } from '../../entities/TaskApi';
+import { useNavigate } from 'react-router-dom';
 import { Card, Col, Container, Row, Button } from 'react-bootstrap';
+import type { UserAttributes } from '../../types/authTypes';
 
-export default function UserAccountPage({ user, setUser }) {
+interface UserAccountPageProps {
+  user: UserAttributes | null;
+  // setUser: (user: UserAttributes | null) => void;
+}
+
+export default function UserAccountPage({ user }: UserAccountPageProps) {
   const navigate = useNavigate();
 
   if (!user)
@@ -46,8 +52,6 @@ export default function UserAccountPage({ user, setUser }) {
                   {user.role === 'admin' ? 'Администратор' : 'Обычный'} <br />
                 </Card.Text>
               </Card.Body>
-              <div className="d-flex justify-content-center mt-3 mb-3"></div>
-              <div className="d-flex justify-content-center mt-3 mb-3"></div>
             </Card>
           </Col>
         </Row>
