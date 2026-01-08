@@ -1,16 +1,25 @@
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
 import { useNavigate, useLocation } from 'react-router-dom';
+import type { UserAttributes } from '../../types/authTypes';
 
-export default function NavBar({ handleSignOut, user }) {
+interface NavBarProps {
+  handleSignOut: () => Promise<void>;
+  user: UserAttributes | null;
+}
+
+export default function NavBar({ handleSignOut, user }: NavBarProps): React.JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const onSignOut = () => {
-    handleSignOut();
-    navigate('/');
+  const onSignOut = async (): Promise<void> => {
+    try {
+      await handleSignOut();
+      navigate('/');
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   console.log('Current path:', location.pathname);
