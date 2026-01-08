@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { setAccessToken } from '../shared/lib/axiosInstance';
 import { AuthApi } from '../entities/AuthApi';
+import type { UserAttributes, AuthResponse, ApiResponse } from '../types/authTypes';
+import type { TaskAttributes } from '../types/taskTypes';
 import NavBar from '../widgets/NavBar/NavBar';
 import MainPage from '../pages/MainPage/MainPage';
 import SignUpPage from '../pages/SignUpPage/SignUpPage';
@@ -12,13 +14,13 @@ import AllTasksPage from '../pages/AllTasksPage/AllTasksPage';
 import UserTasksPage from '../pages/UserTasksPage/UserTasksPage';
 import OneTaskPage from '../pages/OneTaskPage/OneTaskPage';
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [allTasks, setAllTasks] = useState([]);
+export default function App(): React.JSX.Element {
+  const [user, setUser] = useState<UserAttributes | null>(null);
+  const [allTasks, setAllTasks] = useState<TaskAttributes[]>([]);
 
   const handleSignOut = async () => {
     try {
-      AuthApi.signOut();
+      await AuthApi.signOut();
 
       setUser(null);
       setAccessToken('');
@@ -29,9 +31,11 @@ export default function App() {
 
   useEffect(() => {
     AuthApi.refreshTokens()
-      .then((response) => {
-        setUser(response.data.user);
-        setAccessToken(response.data.accessToken);
+      .then((response: ApiResponse<AuthResponse>) => {
+        if (response.data) {
+          setUser(response.data.user);
+          setAccessToken(response.data.accessToken);
+        }
       })
       .catch(() => {
         setUser(null);
@@ -48,7 +52,10 @@ export default function App() {
           <Route path="/signUp" element={<SignUpPage setUser={setUser} />} />
           <Route path="/signIn" element={<SignInPage setUser={setUser} />} />
           <Route path="/signOut" element={<SignOutPage setUser={setUser} />} />
-          <Route path="/account/:userId" element={<UserAccountPage user={user} setUser={setUser} />} />
+          <Route
+            path="/account/:userId"
+            element={<UserAccountPage user={user} setUser={setUser} />}
+          />
           <Route
             path="/allTasks"
             element={
@@ -56,10 +63,7 @@ export default function App() {
             }
           />
           <Route path="/userTasks" element={<UserTasksPage user={user} />} />
-          <Route
-            path="/task/:taskId"
-            element={<OneTaskPage user={user} />}
-          />
+          <Route path="/task/:taskId" element={<OneTaskPage user={user} />} />
         </Routes>
       </BrowserRouter>
     </>
