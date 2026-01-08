@@ -2,11 +2,23 @@ import { useEffect, useState } from 'react';
 import { TaskApi } from '../../entities/TaskApi';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, Col, Container, Row, Button, Form, Modal } from 'react-bootstrap';
+import type { UserAttributes } from '../../types/authTypes';
+import type { TaskAttributes, UpdateTaskData } from '../../types/taskTypes';
 
-export default function OneTaskPage({ user }) {
+interface OneTaskPageProps {
+  user: UserAttributes | null;
+}
+
+const INITIAL_FORM_DATA: UpdateTaskData = {
+  title: '',
+};
+
+export default function OneTaskPage({ user }: OneTaskPageProps): React.JSX.Element {
   const { taskId } = useParams();
-  const [formData, setFormData] = useState({ title: '' });
-  const [currentTask, setCurrentTask] = useState(null);
+  const numTaskId = Number(taskId);
+
+  const [formData, setFormData] = useState<UpdateTaskData>(INITIAL_FORM_DATA);
+  const [currentTask, setCurrentTask] = useState<TaskAttributes | null>(null);
 
   const [editMode, setEditMode] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -14,32 +26,42 @@ export default function OneTaskPage({ user }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const getCurrentTask = async () => {
-      const response = await TaskApi.getById(taskId);
-      const taskData = response.data;
-      setCurrentTask(taskData);
-      setFormData({ title: taskData.title });
+    const getCurrentTask = async (): Promise<void> => {
+      if (!numTaskId || isNaN(numTaskId)) return;
+
+      try {
+        const response = await TaskApi.getById(numTaskId);
+
+        if (response.data) {
+          setCurrentTask(response.data);
+          setFormData({ title: response.data.title });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     getCurrentTask();
-  }, [taskId]);
+  }, [numTaskId]);
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (): Promise<void> => {
+    if (!currentTask) return;
+
     try {
-      await TaskApi.updateById(taskId, formData);
+      await TaskApi.updateById(numTaskId, formData);
 
       setEditMode(false);
 
-      const response = await TaskApi.getById(taskId);
+      const response = await TaskApi.getById(numTaskId);
       setCurrentTask(response.data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
     try {
-      await TaskApi.deleteById(taskId);
+      await TaskApi.deleteById(numTaskId);
 
       setShowDeleteModal(false);
       navigate('/userTasks');
@@ -74,7 +96,7 @@ export default function OneTaskPage({ user }) {
                     <Form.Label>Название:</Form.Label>
                     <Form.Control
                       name="title"
-                      value={formData.title}
+                      value={formData.title || ''}
                       onChange={(e) =>
                         setFormData({ ...formData, title: e.target.value })
                       }
