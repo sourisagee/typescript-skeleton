@@ -1,9 +1,9 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import Accordion from 'react-bootstrap/Accordion';
 
-export default function MainPage() {
+export default function MainPage(): React.JSX.Element {
   const location = useLocation();
-  const isMainPage = location.pathname === '/';
+  const isMainPage: boolean = location.pathname === '/';
 
   return (
     <div className="d-flex flex-column min-vh-100">
