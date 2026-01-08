@@ -1,25 +1,38 @@
 import { useEffect, useState } from 'react';
-import { Form, Button, Card, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Button, Card, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { TaskApi } from '../../entities/TaskApi';
+import type { UserAttributes } from '../../types/authTypes';
+import type { TaskAttributes } from '../../types/taskTypes';
 
-export default function UserTasksPage({ user }) {
-  const [task, setTask] = useState({
-    title: '',
-    status: false,
-  });
+interface UserTasksPageProps {
+  user: UserAttributes | null;
+}
+
+interface NewTaskInputs {
+  title: string;
+  status?: boolean;
+}
+
+const INITIAL_TASK_INPUTS: NewTaskInputs = {
+  title: '',
+  status: false,
+};
+
+export default function UserTasksPage({ user }: UserTasksPageProps): React.JSX.Element {
+  const [task, setTask] = useState<NewTaskInputs>(INITIAL_TASK_INPUTS);
   const navigate = useNavigate();
 
-  const [userTasks, setUserTasks] = useState([]);
+  const [userTasks, setUserTasks] = useState<TaskAttributes[]>([]);
 
   useEffect(() => {
-    const getUserTasks = async () => {
+    const getUserTasks = async (): Promise<void> => {
       if (!user) return;
 
       try {
         const response = await TaskApi.getByUserId(user.id);
 
-        setUserTasks(response.data);
+        response.data ? setUserTasks(response.data) : setUserTasks([]);
       } catch (error) {
         console.log(error);
       }
@@ -28,27 +41,30 @@ export default function UserTasksPage({ user }) {
     getUserTasks();
   }, [user]);
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
+
+    if (!user) return;
 
     try {
       const response = await TaskApi.create({
-        title: task.title,
+        title: task.title.trim(),
         status: false,
         user_id: user.id,
       });
       console.log('Full response:', response);
       console.log('Response data:', response.data);
 
-      const newTaskId = response.data?.id;
-
-      navigate(`/task/${newTaskId}`);
+      if (response.data) {
+        const newTaskId = response.data?.id;
+        navigate(`/task/${newTaskId}`);
+      }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const handleChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setTask((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -110,11 +126,7 @@ export default function UserTasksPage({ user }) {
                     <Button
                       variant="outline-secondary"
                       type="button"
-                      onClick={() =>
-                        setTask({
-                          title: '',
-                        })
-                      }
+                      onClick={(): void => setTask(INITIAL_TASK_INPUTS)}
                     >
                       Очистить форму
                     </Button>
