@@ -18,7 +18,7 @@ function verifyAccessToken(req: Request, res: TypedResponse, next: NextFunction)
       return;
     }
 
-    const accessToken = authHeader.split('')[1];
+    const accessToken = authHeader.split(' ')[1];
 
     if (!authHeader) {
       res
