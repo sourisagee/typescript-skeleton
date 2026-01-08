@@ -1,42 +1,57 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { axiosInstance, setAccessToken } from '../../shared/lib/axiosInstance';
 import { useNavigate } from 'react-router';
-import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
+import type { ApiResponse, AuthResponse, UserAttributes } from '../../types/authTypes';
 
-const INITIAL_INPUTS_DATA = {
+interface SignInFormProps {
+  setUser: (user: UserAttributes | null) => void;
+}
+
+interface SignInInputs {
+  email: string;
+  password: string;
+}
+
+const INITIAL_INPUTS_DATA: SignInInputs = {
   email: '',
   password: '',
 };
 
-export default function SignInForm({ setUser }) {
+export default function SignInForm({ setUser }: SignInFormProps): React.JSX.Element {
   const navigate = useNavigate();
-  const [inputs, setInputs] = useState(INITIAL_INPUTS_DATA);
+  const [inputs, setInputs] = useState<SignInInputs>(INITIAL_INPUTS_DATA);
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setInputs((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSignIn = async (event) => {
+  const handleSignIn = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     try {
       event.preventDefault();
       console.log('Sign in submit!');
 
-      const response = await axiosInstance.post('/auth/signIn', inputs);
+      const response = await axiosInstance.post<ApiResponse<AuthResponse>>(
+        '/auth/signIn',
+        inputs,
+      );
       console.log('Успешный вход', response.data);
 
-      localStorage.setItem('user', JSON.stringify(response.data.data.user));
-      localStorage.setItem('accessToken', response.data.data.accessToken);
+      if (response.data.data) {
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
+        localStorage.setItem('accessToken', response.data.data.accessToken);
 
-      setUser(response.data.data.user);
-      setAccessToken(response.data.data.accessToken);
+        setUser(response.data.data.user);
+        setAccessToken(response.data.data.accessToken);
 
-      navigate('/');
+        navigate('/');
+      }
     } catch (error) {
       console.log(error);
-      alert(error.response?.data?.message || 'Вход не выполнен');
+      alert('Ошибка при входе');
     }
   };
 
