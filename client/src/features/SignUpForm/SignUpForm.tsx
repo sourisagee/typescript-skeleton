@@ -1,40 +1,55 @@
-import { useState } from 'react';
+import React, { useState, type ChangeEvent, type FormEvent } from 'react';
 import { axiosInstance, setAccessToken } from '../../shared/lib/axiosInstance';
 import { useNavigate } from 'react-router';
-import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Form, Button } from 'react-bootstrap';
+import type { ApiResponse, AuthResponse, UserAttributes } from '../../types/authTypes';
 
-const INITIAL_INPUTS_DATA = {
+interface SignUpFormProps {
+  setUser: (user: UserAttributes | null) => void;
+}
+
+interface SignUpInputs {
+  username: string;
+  email: string;
+  password: string;
+}
+
+const INITIAL_INPUTS_DATA: SignUpInputs = {
   username: '',
   email: '',
   password: '',
 };
 
-export default function SignUpForm({ setUser }) {
+export default function SignUpForm({ setUser }: SignUpFormProps): React.JSX.Element {
   const navigate = useNavigate();
-  const [inputs, setInputs] = useState(INITIAL_INPUTS_DATA);
+  const [inputs, setInputs] = useState<SignUpInputs>(INITIAL_INPUTS_DATA);
 
-  const handleChange = (event) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     setInputs((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSignUp = async (event) => {
+  const handleSignUp = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     console.log('Submit!');
 
     try {
-      const response = await axiosInstance.post('/auth/signUp', inputs);
-      console.log(response.data);
+      const response = await axiosInstance.post<ApiResponse<AuthResponse>>(
+        '/auth/signUp',
+        inputs,
+      );
+      console.log(response);
 
-      localStorage.setItem('user', JSON.stringify(response.data.data.user));
-      localStorage.setItem('accessToken', response.data.data.accessToken);
+      if (response.data.data) {
+        localStorage.setItem('user', JSON.stringify(response.data.data.user));
 
-      setUser(response.data.data.user);
-      setAccessToken(response.data.data.accessToken);
+        setUser(response.data.data.user);
+        setAccessToken(response.data.data.accessToken);
 
-      navigate('/');
+        navigate('/');
+      }
     } catch (error) {
       console.log(error);
     }
@@ -50,9 +65,7 @@ export default function SignUpForm({ setUser }) {
                 <Form onSubmit={handleSignUp}>
                   <div className="text-center mb-4">
                     <h2 className="fw-bold text-primary">Создай аккаунт</h2>
-                    <p className="text-muted">
-                      Присоединяйся к нам!
-                    </p>
+                    <p className="text-muted">Присоединяйся к нам!</p>
                   </div>
 
                   <Form.Group className="mb-3">
