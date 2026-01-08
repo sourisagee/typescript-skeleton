@@ -1,12 +1,17 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { axiosInstance, setAccessToken } from '../../shared/lib/axiosInstance';
+import type { UserAttributes } from '../../types/authTypes';
 
-export default function SignOutPage({ setUser }) {
+interface SignOutPageProps {
+  setUser: (user: UserAttributes | null) => void;
+}
+
+export default function SignOutPage({ setUser }: SignOutPageProps): React.JSX.Element {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const signOut = async () => {
+    const signOut = async (): Promise<void> => {
       try {
         await axiosInstance.delete('/auth/signOut');
       } catch (error) {
@@ -14,11 +19,11 @@ export default function SignOutPage({ setUser }) {
       } finally {
         setAccessToken('');
         setUser(null);
-        navigate('/');
+        navigate('/', { replace: true });
       }
     };
-    
-    signOut()
+
+    signOut();
   }, [setUser, navigate]);
 
   return (
